@@ -1,0 +1,25 @@
+name: Go Tests
+
+on: [push]
+
+jobs:
+  test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.x
+      - uses: actions/checkout@v3
+      - name: Test
+        run: go test -v ./...
+  lint:
+    name: Golang-CI Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42.1
