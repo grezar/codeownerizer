@@ -1,0 +1,28 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - main: ./cmd/codeownerizer
+    binary: codeownerizer
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.Revision={{.ShortCommit}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+archives:
+  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}'
+    replacements:
+      darwin: darwin
+      linux: linux
+      windows: windowns
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+release:
+  prerelease: auto
