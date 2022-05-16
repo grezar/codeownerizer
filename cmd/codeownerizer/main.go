@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -14,8 +15,13 @@ import (
 )
 
 var (
-	org  string
-	repo string
+	// These variables are set in build step.
+	Version  string
+	Revision string
+
+	version bool
+	org     string
+	repo    string
 )
 
 func main() {
@@ -25,6 +31,15 @@ func main() {
 }
 
 func run() error {
+	flag.BoolVar(&version, "version", false, "Print version")
+	flag.StringVar(&org, "org", "", "GitHub organization")
+	flag.StringVar(&repo, "repo", "", "GitHub repository")
+	flag.Parse()
+
+	if version {
+		fmt.Println("codeownerizer", Version, Revision)
+		return nil
+	}
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -43,15 +58,18 @@ func run() error {
 		owners = append(owners, rule.Owners...)
 	}
 
-	if os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTION") != "" {
+	// Default values when it runs on GitHub Actions
+	if (os.Getenv("CI") == "true") && (os.Getenv("GITHUB_ACTION") != "") {
 		// GITHUB_REPOSITORY is the owner and repository name. For example, octocat/Hello-World.
 		githubRepository := strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")
-		org = githubRepository[0]
-		repo = githubRepository[1]
-	} else {
-		flag.StringVar(&org, "org", "", "GitHub organization")
-		flag.StringVar(&repo, "repo", "", "GitHub repository")
-		flag.Parse()
+
+		if org == "" {
+			org = githubRepository[0]
+		}
+
+		if repo == "" {
+			repo = githubRepository[1]
+		}
 	}
 
 	return codeownerizer.AddUngrantedOwners(ctx, client, org, repo, owners)
