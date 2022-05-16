@@ -27,19 +27,8 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 		switch owner.Type {
 		case codeowners.TeamOwner:
 			teamOwnerName := strings.Split(owner.String(), "/")[1]
-			var insufficientPermission bool
 
-			for _, team := range teams {
-				if (stringify(team.Name) == teamOwnerName) && !team.Permissions[pushPermission] {
-					insufficientPermission = true
-				}
-			}
-
-			if !containsTeamOwner(teams, teamOwnerName) {
-				insufficientPermission = true
-			}
-
-			if insufficientPermission {
+			if !hasTeamOwnerSufficientPermission(teams, teamOwnerName) || !containsTeamOwner(teams, teamOwnerName) {
 				resp, err := api.Teams.AddTeamRepoBySlug(ctx, org, teamOwnerName, org, repo, &github.TeamAddTeamRepoOptions{
 					Permission: pushPermission,
 				})
@@ -52,19 +41,8 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 			}
 		case codeowners.UsernameOwner:
 			userOwnerName := strings.TrimPrefix(owner.String(), "@")
-			var insufficientPermission bool
 
-			for _, collaborator := range collaborators {
-				if (stringify(collaborator.Name) == userOwnerName) && !collaborator.Permissions[pushPermission] {
-					insufficientPermission = true
-				}
-			}
-
-			if !containsUserOwner(collaborators, userOwnerName) {
-				insufficientPermission = true
-			}
-
-			if insufficientPermission {
+			if !hasUserOwnerSufficientPermission(collaborators, userOwnerName) || !containsUserOwner(collaborators, userOwnerName) {
 				_, resp, err := api.Repositories.AddCollaborator(ctx, org, repo, userOwnerName, &github.RepositoryAddCollaboratorOptions{
 					Permission: pushPermission,
 				})
@@ -89,19 +67,8 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 			}
 
 			emailOwnerUsername := stringify(userSearchResult.Users[0].Name)
-			var insufficientPermission bool
 
-			for _, collaborator := range collaborators {
-				if (stringify(collaborator.Name) == emailOwnerUsername) && !collaborator.Permissions[pushPermission] {
-					insufficientPermission = true
-				}
-			}
-
-			if !containsUserOwner(collaborators, emailOwnerUsername) {
-				insufficientPermission = true
-			}
-
-			if insufficientPermission {
+			if !hasUserOwnerSufficientPermission(collaborators, emailOwnerUsername) || !containsUserOwner(collaborators, emailOwnerUsername) {
 				_, resp, err := api.Repositories.AddCollaborator(ctx, org, repo, emailOwnerUsername, &github.RepositoryAddCollaboratorOptions{
 					Permission: pushPermission,
 				})
@@ -118,29 +85,4 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 	}
 
 	return nil
-}
-
-func containsTeamOwner(s []*github.Team, e string) bool {
-	for _, v := range s {
-		if e == stringify(v.Name) {
-			return true
-		}
-	}
-	return false
-}
-
-func containsUserOwner(s []*github.User, e string) bool {
-	for _, u := range s {
-		if e == stringify(u.Name) {
-			return true
-		}
-	}
-	return false
-}
-
-func stringify(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
 }
