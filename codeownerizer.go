@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"log"
+
 	"github.com/google/go-github/v44/github"
 	"github.com/hmarr/codeowners"
 )
@@ -38,6 +40,7 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 				if err = github.CheckResponse(resp.Response); err != nil {
 					return err
 				}
+				log.Printf("%s was added to the repo with the %s permission.\n", owner.String(), pushPermission)
 			}
 		case codeowners.UsernameOwner:
 			userOwnerName := strings.TrimPrefix(owner.String(), "@")
@@ -52,6 +55,7 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 				if err = github.CheckResponse(resp.Response); err != nil {
 					return err
 				}
+				log.Printf("%s was added to the repo with the %s permission.\n", owner.String(), pushPermission)
 			}
 		case codeowners.EmailOwner:
 			emailOwnerEmail := owner.String()
@@ -78,6 +82,7 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 				if err = github.CheckResponse(resp.Response); err != nil {
 					return err
 				}
+				log.Printf("%s was added to the repo with the %s permission.\n", owner.String(), pushPermission)
 			}
 		default:
 			return fmt.Errorf("unknown owner type: %s\n", owner.Type)
