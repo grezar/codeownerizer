@@ -1,6 +1,22 @@
 package codeownerizer
 
-import "github.com/google/go-github/v44/github"
+import (
+	"github.com/google/go-github/v44/github"
+	"github.com/hmarr/codeowners"
+)
+
+func uniqueOwners(owners []codeowners.Owner) []codeowners.Owner {
+	var unique []codeowners.Owner
+	m := make(map[string]bool)
+	for _, owner := range owners {
+		v := owner.String()
+		if !m[v] {
+			m[v] = true
+			unique = append(unique, owner)
+		}
+	}
+	return unique
+}
 
 func hasTeamOwnerSufficientPermission(teams []*github.Team, name string) bool {
 	for _, team := range teams {

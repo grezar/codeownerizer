@@ -15,6 +15,8 @@ import (
 const pushPermission = "push"
 
 func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, repo string, owners []codeowners.Owner) error {
+	owners = uniqueOwners(owners)
+
 	teams, _, err := api.Repositories.ListTeams(ctx, org, repo, nil)
 	if err != nil {
 		return err
