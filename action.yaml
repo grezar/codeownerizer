@@ -1,5 +1,8 @@
 name: "Codeownerizer"
 description: "Automatically grant appropriate permissions to teams/users lacking the permission as a code owner"
+branding:
+  icon: "check-circle"
+  color: "green"
 inputs:
   version:
     description: "A version to install codeownerizer"
