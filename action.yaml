@@ -23,4 +23,4 @@ runs:
         curl -sfLO ${DOWNLOAD_URL}
         FILENAME=$(basename $DOWNLOAD_URL .tar.gz)
         tar xzvf ${FILENAME}.tar.gz
-        ./codeownerizer
+        sudo install codeownerizer /usr/local/bin/codeownerizer
