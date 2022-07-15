@@ -16,8 +16,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Codeownerizer
+    - name: Generate token
+      id: generate_token
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: ${{ secrets.APP_ID }}
+        private_key: ${{ secrets.PRIVATE_KEY }}
+
+    - name: Install codeownerizer
       uses: grezar/codeownerizer@v1
+
+    - name: Grant
+      run: codeownerizer
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
 ```
