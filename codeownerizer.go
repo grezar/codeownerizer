@@ -2,7 +2,6 @@ package codeownerizer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -37,10 +36,12 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 					Permission: pushPermission,
 				})
 				if err != nil {
-					return err
+					log.Println(err.Error())
+					continue
 				}
 				if err = github.CheckResponse(resp.Response); err != nil {
-					return err
+					log.Println(err.Error())
+					continue
 				}
 				log.Printf("%s was added to the repo with the %s permission.\n", owner.String(), pushPermission)
 			}
@@ -52,10 +53,12 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 					Permission: pushPermission,
 				})
 				if err != nil {
-					return err
+					log.Println(err.Error())
+					continue
 				}
 				if err = github.CheckResponse(resp.Response); err != nil {
-					return err
+					log.Println(err.Error())
+					continue
 				}
 				log.Printf("%s was added to the repo with the %s permission.\n", owner.String(), pushPermission)
 			}
@@ -63,13 +66,16 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 			emailOwnerEmail := owner.String()
 			userSearchResult, resp, err := api.Search.Users(ctx, fmt.Sprintf("%s in:email", emailOwnerEmail), nil)
 			if err != nil {
-				return err
+				log.Println(err.Error())
+				continue
 			}
 			if err = github.CheckResponse(resp.Response); err != nil {
-				return err
+				log.Println(err.Error())
+				continue
 			}
 			if len(userSearchResult.Users) > 1 {
-				return errors.New("multiple users who has %s in email was found")
+				log.Printf("multiple users who has %s in email was found\n", emailOwnerEmail)
+				continue
 			}
 
 			emailOwnerUsername := stringify(userSearchResult.Users[0].Name)
@@ -79,15 +85,18 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 					Permission: pushPermission,
 				})
 				if err != nil {
-					return err
+					log.Println(err.Error())
+					continue
 				}
 				if err = github.CheckResponse(resp.Response); err != nil {
-					return err
+					log.Println(err.Error())
+					continue
 				}
 				log.Printf("%s was added to the repo with the %s permission.\n", owner.String(), pushPermission)
 			}
 		default:
-			return fmt.Errorf("unknown owner type: %s\n", owner.Type)
+			log.Printf("unknown owner type: %s\n", owner.Type)
+			continue
 		}
 	}
 
