@@ -1,7 +1,7 @@
 package codeownerizer
 
 import (
-	"github.com/google/go-github/v44/github"
+	"github.com/google/go-github/v69/github"
 	"github.com/hmarr/codeowners"
 )
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-github/v44/github"
+	"github.com/google/go-github/v69/github"
 	"github.com/hmarr/codeowners"
 
 	"github.com/migueleliasweb/go-github-mock/src/mock"
@@ -51,7 +51,7 @@ func TestAddUngrantedOwners(t *testing.T) {
 			mock.GetReposTeamsByOwnerByRepo,
 			[]github.Team{
 				{
-					Name: github.String("octocats"),
+					Name: github.Ptr("octocats"),
 				},
 			},
 		),
@@ -59,26 +59,26 @@ func TestAddUngrantedOwners(t *testing.T) {
 			mock.GetReposCollaboratorsByOwnerByRepo,
 			[]github.User{
 				{
-					Name: github.String("global-owner1"),
+					Name: github.Ptr("global-owner1"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
 				{
-					Name: github.String("global-owner2"),
+					Name: github.Ptr("global-owner2"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
 				{
-					Name: github.String("js-owner"),
+					Name: github.Ptr("js-owner"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
 				// Assume doctocat don't have sufficient permission as a CODEOWNER
 				{
-					Name: github.String("doctocat"),
+					Name: github.Ptr("doctocat"),
 					Permissions: map[string]bool{
 						"push": false,
 					},
@@ -122,10 +122,10 @@ func TestAddUngrantedOwners(t *testing.T) {
 					t.Errorf("unexpected query value\n%s", diff)
 				}
 
-				w.Write(mock.MustMarshal(github.UsersSearchResult{
+				_, _ = w.Write(mock.MustMarshal(github.UsersSearchResult{
 					Users: []*github.User{
 						{
-							Name: github.String("email-owner"),
+							Name: github.Ptr("email-owner"),
 						},
 					},
 				}))
