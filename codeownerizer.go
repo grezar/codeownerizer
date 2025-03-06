@@ -78,7 +78,7 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 				continue
 			}
 
-			emailOwnerUsername := stringify(userSearchResult.Users[0].Name)
+			emailOwnerUsername := stringify(userSearchResult.Users[0].Login)
 
 			if !hasUserOwnerSufficientPermission(collaborators, emailOwnerUsername) || !containsUserOwner(collaborators, emailOwnerUsername) {
 				_, resp, err := api.Repositories.AddCollaborator(ctx, org, repo, emailOwnerUsername, &github.RepositoryAddCollaboratorOptions{
