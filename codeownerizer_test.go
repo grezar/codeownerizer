@@ -46,7 +46,8 @@ func TestAddUngrantedOwnersWithTeamOwner(t *testing.T) {
 		mock.WithRequestMatch(
 			mock.GetReposTeamsByOwnerByRepo,
 			[]github.Team{
-				// Code owner exists in the organization and has push permission
+				// Code owner exists in the repository and has push permission.
+				// No need to add this team to the repository.
 				{
 					Name: github.Ptr("octocats"),
 					Slug: github.Ptr("octocats"),
@@ -54,7 +55,8 @@ func TestAddUngrantedOwnersWithTeamOwner(t *testing.T) {
 						"push": true,
 					},
 				},
-				// Code owner exists in the organization and does not have push permission
+				// Code owner exists in the organization and does not have push permission.
+				// Need to add this team to the repository.
 				{
 					Name: github.Ptr("Octocats Admins"),
 					Slug: github.Ptr("octocats-admins"),
@@ -62,7 +64,8 @@ func TestAddUngrantedOwnersWithTeamOwner(t *testing.T) {
 						"push": false,
 					},
 				},
-				// Code owner does not exist in the organization
+				// Code owner does not exist in the organization.
+				// Need to add this team to the repository.
 				// {
 				// 	Name: github.Ptr("Octocats Viewers"),
 				// 	Slug: github.Ptr("octocats-viewers"),
@@ -160,21 +163,24 @@ func TestAddUngrantedOwnersWithUserOwner(t *testing.T) {
 		mock.WithRequestMatch(
 			mock.GetReposCollaboratorsByOwnerByRepo,
 			[]github.User{
-				// Code owner exists in the organization and has push permission
+				// Code owner exists in the repository and has push permission.
+				// No need to add this user to the repository.
 				{
 					Login: github.Ptr("octocat"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
-				// Code owner exists in the organization and does not have push permission
+				// Code owner exists in the repository and does not have push permission.
+				// Need to add this user to the repository.
 				{
 					Login: github.Ptr("doctocat"),
 					Permissions: map[string]bool{
 						"push": false,
 					},
 				},
-				// Code owner does not exist in the organization
+				// Code owner does not exist in the repository.
+				// Need to add this user to the repository.
 				// {
 				// 	Login: github.Ptr("octocat2"),
 				// },
@@ -267,21 +273,24 @@ func TestAddUngrantedOwnersWithEmailOwner(t *testing.T) {
 		mock.WithRequestMatch(
 			mock.GetReposCollaboratorsByOwnerByRepo,
 			[]github.User{
-				// Code owner exists in the organization and has push permission
+				// Code owner exists in the repository and has push permission.
+				// No need to add this user to the repository.
 				{
 					Login: github.Ptr("octocat"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
-				// Code owner exists in the organization and does not have push permission
+				// Code owner exists in the repository and does not have push permission.
+				// Need to add this user to the repository.
 				{
 					Login: github.Ptr("doctocat"),
 					Permissions: map[string]bool{
 						"push": false,
 					},
 				},
-				// Code owner does not exist in the organization
+				// Code owner does not exist in the repository.
+				// Need to add this user to the repository.
 				// {
 				// 	Login: github.Ptr("octocat2"),
 				// },
