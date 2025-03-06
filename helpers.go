@@ -20,7 +20,7 @@ func uniqueOwners(owners []codeowners.Owner) []codeowners.Owner {
 
 func hasTeamOwnerSufficientPermission(teams []*github.Team, name string) bool {
 	for _, team := range teams {
-		if (stringify(team.Name) == name) && !team.Permissions[pushPermission] {
+		if (stringify(team.Slug) == name) && !team.Permissions[pushPermission] {
 			return false
 		}
 	}
@@ -29,7 +29,7 @@ func hasTeamOwnerSufficientPermission(teams []*github.Team, name string) bool {
 
 func hasUserOwnerSufficientPermission(collaborators []*github.User, name string) bool {
 	for _, collaborator := range collaborators {
-		if (stringify(collaborator.Name) == name) && !collaborator.Permissions[pushPermission] {
+		if (stringify(collaborator.Login) == name) && !collaborator.Permissions[pushPermission] {
 			return false
 		}
 	}

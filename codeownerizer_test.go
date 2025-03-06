@@ -28,6 +28,18 @@ func TestAddUngrantedOwners(t *testing.T) {
 
 	ctx := context.Background()
 
+	var octocatsTeamAddedToRepo bool
+	putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsTeam := mock.EndpointPattern{
+		Pattern: fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", org, "octocats", org, repo),
+		Method:  "PUT",
+	}
+
+	var octocatsAdminsTeamAddedToRepo bool
+	putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsAdminsTeam := mock.EndpointPattern{
+		Pattern: fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", org, "octocats-admins", org, repo),
+		Method:  "PUT",
+	}
+
 	var missingInsufficientPermissionUserOwnerAddedToRepo bool
 	putReposCollaboratorsByOwnerByRepoWithDoctocat := mock.EndpointPattern{
 		Pattern: fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, "doctocat"),
@@ -52,6 +64,11 @@ func TestAddUngrantedOwners(t *testing.T) {
 			[]github.Team{
 				{
 					Name: github.Ptr("octocats"),
+					Slug: github.Ptr("octocats"),
+				},
+				{
+					Name: github.Ptr("Octocats Admins"),
+					Slug: github.Ptr("octocats-admins"),
 				},
 			},
 		),
@@ -59,26 +76,26 @@ func TestAddUngrantedOwners(t *testing.T) {
 			mock.GetReposCollaboratorsByOwnerByRepo,
 			[]github.User{
 				{
-					Name: github.Ptr("global-owner1"),
+					Login: github.Ptr("global-owner1"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
 				{
-					Name: github.Ptr("global-owner2"),
+					Login: github.Ptr("global-owner2"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
 				{
-					Name: github.Ptr("js-owner"),
+					Login: github.Ptr("js-owner"),
 					Permissions: map[string]bool{
 						"push": true,
 					},
 				},
 				// Assume doctocat don't have sufficient permission as a CODEOWNER
 				{
-					Name: github.Ptr("doctocat"),
+					Login: github.Ptr("doctocat"),
 					Permissions: map[string]bool{
 						"push": false,
 					},
@@ -94,12 +111,15 @@ func TestAddUngrantedOwners(t *testing.T) {
 			},
 		),
 		mock.WithRequestMatchHandler(
-			mock.PutOrgsTeamsReposByOrgByTeamSlugByOwnerByRepo,
+			putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsTeam,
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				expected := fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", org, "octocats", org, repo)
-				if r.URL.Path != expected {
-					t.Errorf("expected: %s, got: %s\n", expected, r.URL.Path)
-				}
+				octocatsTeamAddedToRepo = true
+			}),
+		),
+		mock.WithRequestMatchHandler(
+			putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsAdminsTeam,
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				octocatsAdminsTeamAddedToRepo = true
 			}),
 		),
 		mock.WithRequestMatchHandler(
@@ -143,6 +163,22 @@ func TestAddUngrantedOwners(t *testing.T) {
 	err = AddUngrantedOwners(ctx, client, "org", "repo", owners)
 	if err != nil {
 		t.Error(err)
+	}
+
+	if !octocatsTeamAddedToRepo {
+		t.Errorf(
+			"expected %s %s to be called\n",
+			putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsTeam.Method,
+			putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsTeam.Pattern,
+		)
+	}
+
+	if !octocatsAdminsTeamAddedToRepo {
+		t.Errorf(
+			"expected %s %s to be called\n",
+			putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsAdminsTeam.Method,
+			putOrgsTeamsReposByOrgByTeamSlugByOwnerByRepoWithOctocatsAdminsTeam.Pattern,
+		)
 	}
 
 	if !missingInsufficientPermissionUserOwnerAddedToRepo {
