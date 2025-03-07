@@ -18,36 +18,36 @@ func uniqueOwners(owners []codeowners.Owner) []codeowners.Owner {
 	return unique
 }
 
-func hasTeamOwnerSufficientPermission(teams []*github.Team, name string) bool {
+func hasTeamOwnerSufficientPermission(teams []*github.Team, owner string) bool {
 	for _, team := range teams {
-		if (stringify(team.Name) == name) && !team.Permissions[pushPermission] {
-			return false
-		}
-	}
-	return true
-}
-
-func hasUserOwnerSufficientPermission(collaborators []*github.User, name string) bool {
-	for _, collaborator := range collaborators {
-		if (stringify(collaborator.Name) == name) && !collaborator.Permissions[pushPermission] {
-			return false
-		}
-	}
-	return true
-}
-
-func containsTeamOwner(s []*github.Team, e string) bool {
-	for _, v := range s {
-		if e == stringify(v.Name) {
+		if (stringify(team.Slug) == owner) && team.Permissions[pushPermission] {
 			return true
 		}
 	}
 	return false
 }
 
-func containsUserOwner(s []*github.User, e string) bool {
-	for _, u := range s {
-		if e == stringify(u.Name) {
+func hasUserOwnerSufficientPermission(collaborators []*github.User, owner string) bool {
+	for _, collaborator := range collaborators {
+		if (stringify(collaborator.Login) == owner) && collaborator.Permissions[pushPermission] {
+			return true
+		}
+	}
+	return false
+}
+
+func containsTeamOwner(teams []*github.Team, owner string) bool {
+	for _, team := range teams {
+		if stringify(team.Slug) == owner {
+			return true
+		}
+	}
+	return false
+}
+
+func containsUserOwner(collaborators []*github.User, owner string) bool {
+	for _, collaborator := range collaborators {
+		if stringify(collaborator.Login) == owner {
 			return true
 		}
 	}

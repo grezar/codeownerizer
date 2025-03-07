@@ -16,12 +16,12 @@ const pushPermission = "push"
 func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, repo string, owners []codeowners.Owner) error {
 	owners = uniqueOwners(owners)
 
-	teams, _, err := api.Repositories.ListTeams(ctx, org, repo, nil)
+	teams, err := ListTeams(ctx, api, org, repo)
 	if err != nil {
 		return err
 	}
 
-	collaborators, _, err := api.Repositories.ListCollaborators(ctx, org, repo, nil)
+	collaborators, err := ListCollaborators(ctx, api, org, repo)
 	if err != nil {
 		return err
 	}
@@ -31,6 +31,9 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 		case codeowners.TeamOwner:
 			teamOwnerName := strings.Split(owner.String(), "/")[1]
 
+			// Grant a push permission to
+			// - a team that is already have an access to the repository but does not have a push permission.
+			// - a team that does not have an access to the repository.
 			if !hasTeamOwnerSufficientPermission(teams, teamOwnerName) || !containsTeamOwner(teams, teamOwnerName) {
 				resp, err := api.Teams.AddTeamRepoBySlug(ctx, org, teamOwnerName, org, repo, &github.TeamAddTeamRepoOptions{
 					Permission: pushPermission,
@@ -78,7 +81,7 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 				continue
 			}
 
-			emailOwnerUsername := stringify(userSearchResult.Users[0].Name)
+			emailOwnerUsername := stringify(userSearchResult.Users[0].Login)
 
 			if !hasUserOwnerSufficientPermission(collaborators, emailOwnerUsername) || !containsUserOwner(collaborators, emailOwnerUsername) {
 				_, resp, err := api.Repositories.AddCollaborator(ctx, org, repo, emailOwnerUsername, &github.RepositoryAddCollaboratorOptions{
@@ -101,4 +104,40 @@ func AddUngrantedOwners(ctx context.Context, api *github.Client, org string, rep
 	}
 
 	return nil
+}
+
+func ListTeams(ctx context.Context, api *github.Client, org string, repo string) ([]*github.Team, error) {
+	allTeams := []*github.Team{}
+	opts := &github.ListOptions{PerPage: 100}
+	for {
+		teams, resp, err := api.Repositories.ListTeams(ctx, org, repo, opts)
+		if err != nil {
+			return nil, err
+		}
+		allTeams = append(allTeams, teams...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+	return allTeams, nil
+}
+
+func ListCollaborators(ctx context.Context, api *github.Client, org string, repo string) ([]*github.User, error) {
+	allCollaborators := []*github.User{}
+	opts := &github.ListCollaboratorsOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+	for {
+		collaborators, resp, err := api.Repositories.ListCollaborators(ctx, org, repo, opts)
+		if err != nil {
+			return nil, err
+		}
+		allCollaborators = append(allCollaborators, collaborators...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+	return allCollaborators, nil
 }

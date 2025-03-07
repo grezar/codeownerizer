@@ -24,6 +24,8 @@
 # the octocats team in the octo-org organization owns all .txt files.
 *.txt @octo-org/octocats
 
+* @octo-org/octocats-admins
+
 # In this example, @doctocat owns any files in the build/logs
 # directory at the root of the repository and any of its
 # subdirectories.
